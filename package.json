@@ -1,0 +1,19 @@
+{
+  "name": "generator-logic",
+  "version": "0.1.0",
+  "description": "logic manager for table generator; build index, call table",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Random-Tables/generator-logic.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Random-Tables/generator-logic/issues"
+  },
+  "homepage": "https://github.com/Random-Tables/generator-logic#readme"
+}
