@@ -42,6 +42,7 @@ Returns below object based on call provided
     ];
 	utility?: [string] (field used if requesting a utility table)
 	type?: [string] (currently unused futureproofing for increasing flexibility)
+    missingLib: [bool] (returns true if a required library is missing)
 	call: [string] ()
 }
 ```

@@ -4,7 +4,7 @@
   "description": "logic manager for table generator; build index, call table",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/Random-Tables/generator-logic/issues"
   },
-  "homepage": "https://github.com/Random-Tables/generator-logic#readme"
+  "homepage": "https://github.com/Random-Tables/generator-logic#readme",
+  "devDependencies": {
+    "@random-tables/npc-fantasy": "^1.5.0",
+    "@random-tables/utility-nature": "^1.2.1",
+    "mocha": "^10.0.0"
+  }
 }
