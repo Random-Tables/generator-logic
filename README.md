@@ -2,6 +2,10 @@
 Background logic for building indexes &amp; returning data
 
 
+### TDD
+
+`npm run test`
+
 ## Glossary
 
 `Collection` - Thematically linked collection of tables, this provides the root index called, these id's should be unique   
