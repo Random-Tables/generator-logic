@@ -6,17 +6,18 @@ let generalIndex;
 let issues = [];
 const STR = {
   nonTableIssue: "A non-table item was passed inside buildIndex array",
+  missingAsync: "table missing tableData & no asyncGet function passed"
 };
+let asyncGetFunction;
 
-function addTableToIndex(arr) {
+function addTableToIndex(arr, asyncGet) {
+	asyncGetFunction = asyncGet;
   let categories = Object.keys(generalIndex);
-  console.log("->>arr", typeof arr);
   if (
     typeof arr === "object" &&
     arr.hasOwnProperty &&
     arr.hasOwnProperty("collectionID") &&
-    arr.hasOwnProperty("tables") &&
-    arr.hasOwnProperty("tableData")
+    arr.hasOwnProperty("tables")
   ) {
     console.log(">>arr", arr.collectionID);
     const { collectionID, tables, tableData, category, version, required } =
@@ -27,6 +28,9 @@ function addTableToIndex(arr) {
       category,
       version,
     };
+	if(!tableData && !asyncGet) {
+        if (!issues.includes(STR.missingAsync)) issues.push(STR.missingAsync);
+	}
     if (arr.isUtility) {
       generalIndex.utility[collectionID] = dataObject;
     }
@@ -101,4 +105,5 @@ module.exports = {
   buildIndex,
   appendIndex: function (indexObject) {},
   getCall: function (tableCallString) {},
+  getCallNoAsync: function (tableCallString) {},
 };

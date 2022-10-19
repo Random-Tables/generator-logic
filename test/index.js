@@ -84,12 +84,22 @@ const TEST_TABLES = {
       },
     ],
   },
+  asyncGet: {
+    collectionID: 'table-asnyc-get',
+    collectionName: "Low V Table",
+    version: 1,
+    tags: ["testing"],
+    tables: {
+      test: ["tester"],
+    },
+  },
 };
 
 const expectedErrors = {
   nonTable: "A non-table item was passed inside buildIndex array",
   missingtable: "Missing table::" + STRINGS.noneExistTable,
   lowVersionTable: `Table::${STRINGS.tooLowVersionTablename} required at version::4, but is version::1`,
+  missingAsync: "table missing tableData & no asyncGet function passed"
 };
 
 const tableCallA = "npc-fantasy/dwarf/male";
@@ -98,6 +108,21 @@ describe("Generator Logic", function () {
   describe("buildIndex", function buildNoEr() {
     let index;
     let issues;
+
+    it("should run buildIndex without erroring, but should have async function missing issue", function () {
+      assert.doesNotThrow(
+        () => {
+          const r = genLogic.buildIndex([
+            TEST_TABLES.asyncGet,
+          ]);
+          index = r.generalIndex;
+          issues = r.issues;
+        },
+        Error,
+        "Error thrown"
+      );
+      assert.ok(issues.includes(expectedErrors.missingAsync));
+    });
 
     it("should run buildIndex without erroring", function () {
       assert.doesNotThrow(
@@ -108,6 +133,7 @@ describe("Generator Logic", function () {
             TEST_TABLES.notTable,
             TEST_TABLES.hasRequirements,
             TEST_TABLES.lowVersion,
+            TEST_TABLES.asyncGet,
           ]);
           index = r.generalIndex;
           issues = r.issues;
