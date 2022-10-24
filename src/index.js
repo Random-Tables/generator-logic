@@ -6,12 +6,12 @@ let generalIndex;
 let issues = [];
 const STR = {
   nonTableIssue: "A non-table item was passed inside buildIndex array",
-  missingAsync: "table missing tableData & no asyncGet function passed"
+  missingAsync: "table missing tableData & no asyncGet function passed",
 };
 let asyncGetFunction;
 
 function addTableToIndex(arr, asyncGet) {
-	asyncGetFunction = asyncGet;
+  asyncGetFunction = asyncGet;
   let categories = Object.keys(generalIndex);
   if (
     typeof arr === "object" &&
@@ -28,9 +28,9 @@ function addTableToIndex(arr, asyncGet) {
       category,
       version,
     };
-	if(!tableData && !asyncGet) {
-        if (!issues.includes(STR.missingAsync)) issues.push(STR.missingAsync);
-	}
+    if (!tableData && !asyncGet) {
+      if (!issues.includes(STR.missingAsync)) issues.push(STR.missingAsync);
+    }
     if (arr.isUtility) {
       generalIndex.utility[collectionID] = dataObject;
     }
@@ -50,13 +50,21 @@ function addTableToIndex(arr, asyncGet) {
   }
 }
 
-function buildIndex(arrayOfTableIndexes, onComplete, onError) {
-  generalIndex = JSON.parse(JSON.stringify(rootIndex));
-  issues = [];
+function buildIndex(
+  arrayOfTableIndexes,
+  rebuild,
+  onComplete,
+  onError,
+  asyncGet
+) {
+  if (rebuild) {
+    generalIndex = JSON.parse(JSON.stringify(rootIndex));
+    issues = [];
+  }
   let requiredTables = [];
-  // REQURSIVE
+  // RECURSIVE
   function recursiveReqCall(array) {
-    let required = addTableToIndex(array);
+    let required = addTableToIndex(array, asyncGet);
     if (required) requiredTables = requiredTables.concat(required);
     if (typeof array === "object" && array.requirements) {
       array.requirements.forEach(recursiveReqCall);
@@ -90,11 +98,13 @@ function buildIndex(arrayOfTableIndexes, onComplete, onError) {
         if (!issues.includes(errorString)) issues.push(errorString);
       }
     });
+
+    if (onComplete) onComplete();
     console.log(">>>onComplete", Object.keys(generalIndex.all));
     console.log(">>issues", issues);
   } catch (e) {
     console.error("failed to build Index", e);
-    onError();
+    if (onError) onError();
     throw e;
   }
 
@@ -102,8 +112,10 @@ function buildIndex(arrayOfTableIndexes, onComplete, onError) {
 }
 
 module.exports = {
-  buildIndex,
-  appendIndex: function (indexObject) {},
+  buildIndex: (arr, onComplete, onError, asyncGet) =>
+    buildIndex(arr, true, onComplete, onError, asyncGet),
+  appendIndex: (arr, onComplete, onError, asyncGet) =>
+    buildIndex([arr], false, onComplete, onError, asyncGet),
   getCall: function (tableCallString) {},
   getCallNoAsync: function (tableCallString) {},
 };
