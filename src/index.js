@@ -1,3 +1,5 @@
+const calls = require("./getCall.js");
+
 const rootIndex = {
   all: {},
   utility: {},
@@ -19,14 +21,21 @@ function addTableToIndex(arr, asyncGet) {
     arr.hasOwnProperty("collectionID") &&
     arr.hasOwnProperty("tables")
   ) {
-    console.log(">>arr", arr.collectionID);
-    const { collectionID, tables, tableData, category, version, required } =
-      arr;
+    const {
+      collectionID,
+      tables,
+      tableData,
+      category,
+      version,
+      required,
+      isUtility,
+    } = arr;
     const dataObject = {
       tables,
       tableData,
       category,
       version,
+      isUtility,
     };
     if (!tableData && !asyncGet) {
       if (!issues.includes(STR.missingAsync)) issues.push(STR.missingAsync);
@@ -99,6 +108,7 @@ function buildIndex(
       }
     });
 
+    calls.setlocalIndex(generalIndex);
     if (onComplete) onComplete();
     console.log(">>>onComplete", Object.keys(generalIndex.all));
     console.log(">>issues", issues);
@@ -116,6 +126,6 @@ module.exports = {
     buildIndex(arr, true, onComplete, onError, asyncGet),
   appendIndex: (arr, onComplete, onError, asyncGet) =>
     buildIndex([arr], false, onComplete, onError, asyncGet),
-  getCall: function (tableCallString) {},
-  getCallNoAsync: function (tableCallString) {},
+  getCall: calls.getCall,
+  getCallNoAsync: calls.getCallNoAsync,
 };

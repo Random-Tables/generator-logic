@@ -112,16 +112,23 @@ const expectedErrors = {
 };
 
 const tableCallA = "npc-fantasy/dwarf/male";
+const utilityTableCall = "utility-npc/hobby/outdoor";
+const utilityNestedTableCall = "utility-npc/hobby/all";
 
 describe("Generator Logic", function () {
   describe("buildIndex", function buildNoEr() {
     let index;
     let issues;
 
+    let complete = false;
+    function onComplete() {
+      complete = true;
+    }
+
     it("should run buildIndex without erroring, but should have async function missing issue", function () {
       assert.doesNotThrow(
         () => {
-          const r = genLogic.buildIndex([TEST_TABLES.asyncGet]);
+          const r = genLogic.buildIndex([TEST_TABLES.asyncGet], onComplete);
           index = r.generalIndex;
           issues = r.issues;
         },
@@ -129,6 +136,10 @@ describe("Generator Logic", function () {
         "Error thrown"
       );
       assert.ok(issues.includes(expectedErrors.missingAsync));
+    });
+
+    it("should run buildIndex & trigger onComplete", function () {
+      assert.ok(complete);
     });
 
     it("should run buildIndex without erroring", function () {
@@ -164,24 +175,35 @@ describe("Generator Logic", function () {
       assert.ok(Object.keys(r.generalIndex.all).includes(STRINGS.appendTable));
     });
 
-    // test onComplete
     // test onError
 
-    it("Should accept a call for a table", function () {
+    it("Should accept a call for a table - full table", function () {
       const call = genLogic.getCall(tableCallA);
-      console.log("call", call);
+      console.log("T>call", call);
       assert.ok(!!call.type);
       assert.equal(call.call, tableCallA, "Incorrect call value returned");
       assert.ok(!call.utility);
       assert.ok(Array.isArray(call.data));
     });
 
-    // test call B
-
-    // test call C
-
     // test call utility
 
+    it("Should accept a call for a table - utility table",async function () {
+      await genLogic.getCall(utilityTableCall).then((val) => {
+        console.log("U>call", val);
+        assert.ok(!val.type);
+        assert.ok(typeof val === "string");
+      });
+    });
+
+    it("Should accept a call for a table - nested utility table",async function () {
+      await genLogic.getCall(utilityNestedTableCall).then((val) => {
+        console.log("UN>call", val);
+        assert.ok(!val.type);
+        assert.ok(typeof val === "string");
+        assert.ok(!val.includes("{{"));
+      });
+    });
     // test testCollectionMissingLib returns missingLib true
   });
 });
