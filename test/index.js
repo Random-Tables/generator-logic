@@ -1,10 +1,7 @@
 var genLogic = require("../src/index");
 var testCollectionA = require("@random-tables/npc-fantasy");
-// var testCollectionB = require("@random-tables/utility-nature");
 var testCollectionUtility = require("@random-tables/utility-nature");
-// const testCollectionMissingLib = {};
 var assert = require("assert");
-// END -- Imports
 
 const STRINGS = {
   noneExistTable: "non-existant-table@3",
@@ -13,6 +10,7 @@ const STRINGS = {
   recTable: "test-table-rec",
   appendTable: "table-append",
 };
+
 const TEST_TABLES = {
   nonTable: "",
   lowVersion: {
@@ -125,6 +123,18 @@ describe("Generator Logic", function () {
       complete = true;
     }
 
+    it("should run buildIndex and error", function () {
+      let error = false;
+      function onErr() {
+        error = true;
+      }
+
+      const r = genLogic.buildIndex({ x: "x" }, onComplete, onErr);
+      index = r.generalIndex;
+      issues = r.issues;
+      assert.ok(error);
+    });
+
     it("should run buildIndex without erroring, but should have async function missing issue", function () {
       assert.doesNotThrow(
         () => {
@@ -175,8 +185,6 @@ describe("Generator Logic", function () {
       assert.ok(Object.keys(r.generalIndex.all).includes(STRINGS.appendTable));
     });
 
-    // test onError
-
     it("Should accept a call for a table - full table", function () {
       const call = genLogic.getCall(tableCallA);
       console.log("T>call", call);
@@ -186,9 +194,7 @@ describe("Generator Logic", function () {
       assert.ok(Array.isArray(call.data));
     });
 
-    // test call utility
-
-    it("Should accept a call for a table - utility table",async function () {
+    it("Should accept a call for a table - utility table", async function () {
       await genLogic.getCall(utilityTableCall).then((val) => {
         console.log("U>call", val);
         assert.ok(!val.type);
@@ -196,7 +202,7 @@ describe("Generator Logic", function () {
       });
     });
 
-    it("Should accept a call for a table - nested utility table",async function () {
+    it("Should accept a call for a table - nested utility table", async function () {
       await genLogic.getCall(utilityNestedTableCall).then((val) => {
         console.log("UN>call", val);
         assert.ok(!val.type);
@@ -204,6 +210,5 @@ describe("Generator Logic", function () {
         assert.ok(!val.includes("{{"));
       });
     });
-    // test testCollectionMissingLib returns missingLib true
   });
 });

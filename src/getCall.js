@@ -26,9 +26,7 @@ function recursiveStringCheck(tableString) {
         const [callString, defaultValue] = removeCurlyBraces.includes(":")
           ? removeCurlyBraces.split(":")
           : [removeCurlyBraces, 0];
-        console.log(">>callString", callString);
         const recursiveGetCall = getCall(callString);
-        console.log(">>recursiveGetCall", recursiveGetCall);
         resolve(
           typeof recursiveGetCall === "string" ? recursiveGetCall : defaultValue
         );
@@ -51,7 +49,6 @@ function getRandom(arrayTables) {
 function getCall(tableCall) {
   return new Promise( async (resolve, reject) => {
     if (typeof tableCall === "string") {
-      console.log(">>tablecall", tableCall);
       const tableStringSplit = tableCall.split("/");
       if (tableStringSplit.length === 3) {
         const [collection, tableGroup, table] = tableStringSplit;
@@ -59,15 +56,9 @@ function getCall(tableCall) {
         const collectionData = localIndex.all?.[collection];
         const tableGet = collectionData.tableData?.[tableGroup]?.[table];
         if (tableGet) {
-          console.log(
-            ">>localIndex.all?.[collection]",
-            localIndex.all?.[collection]
-          );
 
           if (collectionData.isUtility) {
-            console.log(">>tableGet", tableGet);
             await getRandom(tableGet.table).then((v) => {
-              console.log(">>getRandom(tableGet.table)", v);
               resolve(v);
             });
           } else {

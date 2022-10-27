@@ -81,40 +81,45 @@ function buildIndex(
   }
 
   try {
-    arrayOfTableIndexes.forEach(recursiveReqCall);
+    if (Array.isArray(arrayOfTableIndexes)) {
+      arrayOfTableIndexes.forEach(recursiveReqCall);
 
-    const tableIdArray = Object.keys(generalIndex.all);
+      const tableIdArray = Object.keys(generalIndex.all);
 
-    // add missing required tables to issues array
-    requiredTables.forEach(function (req) {
-      const [tableName, tableVersion] = req.split("@");
-      if (tableIdArray.includes(tableName)) {
-        if (
-          tableVersion &&
-          parseInt(generalIndex.all[tableName].version) < tableVersion
-        ) {
-          issues.push(
-            "Table::" +
-              tableName +
-              " required at version::" +
-              tableVersion +
-              ", but is version::" +
-              generalIndex.all[tableName].version
-          );
+      // add missing required tables to issues array
+      requiredTables.forEach(function (req) {
+        const [tableName, tableVersion] = req.split("@");
+        if (tableIdArray.includes(tableName)) {
+          if (
+            tableVersion &&
+            parseInt(generalIndex.all[tableName].version) < tableVersion
+          ) {
+            issues.push(
+              "Table::" +
+                tableName +
+                " required at version::" +
+                tableVersion +
+                ", but is version::" +
+                generalIndex.all[tableName].version
+            );
+          }
+        } else {
+          const errorString = "Missing table::" + req;
+          if (!issues.includes(errorString)) issues.push(errorString);
         }
-      } else {
-        const errorString = "Missing table::" + req;
-        if (!issues.includes(errorString)) issues.push(errorString);
-      }
-    });
+      });
 
-    calls.setlocalIndex(generalIndex);
-    if (onComplete) onComplete();
-    console.log(">>>onComplete", Object.keys(generalIndex.all));
-    console.log(">>issues", issues);
+      calls.setlocalIndex(generalIndex);
+      if (onComplete) onComplete();
+      console.log(">>>onComplete", Object.keys(generalIndex.all));
+      console.log(">>issues", issues);
+    } else {
+      console.error("failed to build Index, should pass array");
+      if (onError) onError("Not passed an array");
+    }
   } catch (e) {
     console.error("failed to build Index", e);
-    if (onError) onError();
+    if (onError) onError(e);
     throw e;
   }
 
