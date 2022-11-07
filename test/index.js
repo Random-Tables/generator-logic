@@ -1,4 +1,5 @@
 var genLogic = require("../src/index");
+var STR = require("../src/strings");
 var testCollectionA = require("@random-tables/npc-fantasy");
 var testCollectionUtility = require("@random-tables/utility-nature");
 var assert = require("assert");
@@ -13,6 +14,7 @@ const STRINGS = {
 
 const TEST_TABLES = {
   nonTable: "",
+  badObject: { x: "x" },
   lowVersion: {
     collectionID: STRINGS.tooLowVersionTablename,
     collectionName: "Low V Table",
@@ -112,6 +114,7 @@ const expectedErrors = {
 const tableCallA = "npc-fantasy/dwarf/male";
 const utilityTableCall = "utility-npc/hobby/outdoor";
 const utilityNestedTableCall = "utility-npc/hobby/all";
+const incorrectTableCall = "npc-fantasy/dwarf";
 
 describe("Generator Logic", function () {
   describe("buildIndex", function buildNoEr() {
@@ -123,13 +126,26 @@ describe("Generator Logic", function () {
       complete = true;
     }
 
-    it("should run buildIndex and error", function () {
+    it("should run buildIndex and error with non-table arguement", function () {
+      let error = false;
+      function onErr(err) {
+        assert.ok(err.includes(STR.tableNotArray));
+        error = true;
+      }
+
+      const r = genLogic.buildIndex(TEST_TABLES.nonTable, onComplete, onErr);
+      index = r.generalIndex;
+      issues = r.issues;
+      assert.ok(error);
+    });
+
+    it("should run buildIndex and error with table badly constructed object", function () {
       let error = false;
       function onErr() {
         error = true;
       }
 
-      const r = genLogic.buildIndex({ x: "x" }, onComplete, onErr);
+      const r = genLogic.buildIndex(TEST_TABLES.badObject, onComplete, onErr);
       index = r.generalIndex;
       issues = r.issues;
       assert.ok(error);
@@ -208,6 +224,13 @@ describe("Generator Logic", function () {
         assert.ok(!val.type);
         assert.ok(typeof val === "string");
         assert.ok(!val.includes("{{"));
+      });
+    });
+
+    it("Should error when given an incorrectly structured call key", async function () {
+      await genLogic.getCall(incorrectTableCall).catch((err) => {
+        console.log("ER>call", err);
+        assert.ok(err.includes(STR.incorrectCallString));
       });
     });
   });

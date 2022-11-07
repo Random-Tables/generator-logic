@@ -1,3 +1,5 @@
+const STR = require("./strings.js");
+
 let localIndex;
 
 function setlocalIndex(i) {
@@ -47,7 +49,7 @@ function getRandom(arrayTables) {
 }
 
 function getCall(tableCall) {
-  return new Promise( async (resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (typeof tableCall === "string") {
       const tableStringSplit = tableCall.split("/");
       if (tableStringSplit.length === 3) {
@@ -56,7 +58,6 @@ function getCall(tableCall) {
         const collectionData = localIndex.all?.[collection];
         const tableGet = collectionData.tableData?.[tableGroup]?.[table];
         if (tableGet) {
-
           if (collectionData.isUtility) {
             await getRandom(tableGet.table).then((v) => {
               resolve(v);
@@ -70,7 +71,7 @@ function getCall(tableCall) {
         }
       } else {
         console.error(
-          "tableCall is incorrectly structured, unable to divide by / key ::" +
+          STR.incorrectCallString +
             tableCall +
             " :Len: " +
             tableStringSplit.length,

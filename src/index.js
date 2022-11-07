@@ -1,4 +1,5 @@
 const calls = require("./getCall.js");
+const STR = require("./strings.js");
 
 const rootIndex = {
   all: {},
@@ -6,10 +7,6 @@ const rootIndex = {
 };
 let generalIndex;
 let issues = [];
-const STR = {
-  nonTableIssue: "A non-table item was passed inside buildIndex array",
-  missingAsync: "table missing tableData & no asyncGet function passed",
-};
 let asyncGetFunction;
 
 function addTableToIndex(arr, asyncGet) {
@@ -115,7 +112,7 @@ function buildIndex(
       console.log(">>issues", issues);
     } else {
       console.error("failed to build Index, should pass array");
-      if (onError) onError("Not passed an array");
+      if (onError) onError(STR.tableNotArray);
     }
   } catch (e) {
     console.error("failed to build Index", e);
