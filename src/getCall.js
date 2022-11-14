@@ -56,7 +56,7 @@ function getCall(tableCall) {
         const [collection, tableGroup, table] = tableStringSplit;
 
         const collectionData = localIndex.all?.[collection];
-        const tableGet = collectionData.tableData?.[tableGroup]?.[table];
+        const tableGet = collectionData?.tableData?.[tableGroup]?.[table];
         if (tableGet) {
           if (collectionData.isUtility) {
             await getRandom(tableGet.table).then((v) => {
@@ -67,7 +67,7 @@ function getCall(tableCall) {
           }
         } else {
           // granular err
-          reject("Unable to get table from tableCall");
+          reject(STR.callFailGet);
         }
       } else {
         console.error(

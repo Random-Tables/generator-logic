@@ -233,5 +233,35 @@ describe("Generator Logic", function () {
         assert.ok(err.includes(STR.incorrectCallString));
       });
     });
+
+    it("should run buildIndex with single table without erroring", function () {
+      assert.doesNotThrow(
+        () => {
+          const r = genLogic.buildIndex(
+            [
+              TEST_TABLES.appendTable,
+            ],
+            null,
+            null
+          );
+          index = r.generalIndex;
+          issues = r.issues;
+        },
+        Error,
+        "Error thrown"
+      );
+    });
+
+    // check originals removed
+    it("Should not work with removed tables", async function () {
+      await genLogic.getCall(utilityTableCall).catch(e =>{
+        assert.ok(e === STR.callFailGet);
+      });
+    });
+
+    // check async call
+    it("Should accept an asyn call", async function () {
+      assert.ok(false);
+    });
   });
 });
