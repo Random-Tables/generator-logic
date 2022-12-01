@@ -10,7 +10,46 @@ const STRINGS = {
   rootTable: "root-table",
   recTable: "test-table-rec",
   appendTable: "table-append",
+  asyncUtilTable: "table-asnyc-get",
+  asyncFullTable: "table-full-asnyc-get",
+  asyncVal: "async-val",
+  asyncTableValA: "fulltableA",
+  asyncTableValB: "fulltableB",
 };
+
+function asyncFunction(table) {
+  return new Promise((res, rej) => {
+    switch (table.collectionID) {
+      case STRINGS.asyncUtilTable:
+        res({
+          testasync: { test: { table: [STRINGS.asyncVal, STRINGS.asyncVal] } },
+        });
+      case STRINGS.asyncFullTable:
+        res({
+          testtable: {
+            test: {
+              tableSections: [
+                {
+                  name: "Name:",
+                  table: [STRINGS.asyncTableValA],
+                  type: "simple",
+                },
+                {
+                  name: "SName:",
+                  table: [STRINGS.asyncTableValB],
+                  type: "simple",
+                },
+              ],
+            },
+          },
+        });
+
+      default:
+        rej("No table");
+        break;
+    }
+  });
+}
 
 const TEST_TABLES = {
   nonTable: "",
@@ -69,7 +108,7 @@ const TEST_TABLES = {
         requirements: [
           {
             collectionID: STRINGS.rootTable,
-            collectionName: "Low V Table",
+            collectionName: "root utility Table",
             version: 1,
             tags: ["testing"],
             tables: {
@@ -77,7 +116,9 @@ const TEST_TABLES = {
             },
             tableData: {
               test: {
-                tester: {},
+                tester: {
+                  table: ["test {{not/a/table::default}}"],
+                },
               },
             },
           },
@@ -86,12 +127,23 @@ const TEST_TABLES = {
     ],
   },
   asyncGet: {
-    collectionID: "table-asnyc-get",
-    collectionName: "Low V Table",
+    collectionID: STRINGS.asyncUtilTable,
+    collectionName: "Async Utils Table",
+    isUtility: true,
     version: 1,
     tags: ["testing"],
     tables: {
-      test: ["tester"],
+      testasync: ["test"],
+    },
+  },
+  asyncFullGet: {
+    collectionID: STRINGS.asyncFullTable,
+    collectionName: "Async Full Table",
+    isUtility: false,
+    version: 1,
+    tags: ["testing"],
+    tables: {
+      testtable: ["test"],
     },
   },
   appendTable: {
@@ -101,14 +153,19 @@ const TEST_TABLES = {
     tables: {
       test: ["tester"],
     },
+    tableData: {
+      test: {
+        tester: {
+          table: ["test"],
+        },
+      },
+    },
   },
 };
 
 const expectedErrors = {
-  nonTable: "A non-table item was passed inside buildIndex array",
   missingtable: "Missing table::" + STRINGS.noneExistTable,
   lowVersionTable: `Table::${STRINGS.tooLowVersionTablename} required at version::4, but is version::1`,
-  missingAsync: "table missing tableData & no asyncGet function passed",
 };
 
 const tableCallA = "npc-fantasy/dwarf/male";
@@ -161,7 +218,7 @@ describe("Generator Logic", function () {
         Error,
         "Error thrown"
       );
-      assert.ok(issues.includes(expectedErrors.missingAsync));
+      assert.ok(issues.includes(STR.missingAsync));
     });
 
     it("should run buildIndex & trigger onComplete", function () {
@@ -201,13 +258,13 @@ describe("Generator Logic", function () {
       assert.ok(Object.keys(r.generalIndex.all).includes(STRINGS.appendTable));
     });
 
-    it("Should accept a call for a table - full table", function () {
-      const call = genLogic.getCall(tableCallA);
+    it("Should accept a call for a table - full table", async function () {
+      const call = await genLogic.getCall(tableCallA);
       console.log("T>call", call);
-      assert.ok(!!call.type);
-      assert.equal(call.call, tableCallA, "Incorrect call value returned");
-      assert.ok(!call.utility);
-      assert.ok(Array.isArray(call.data));
+      assert.ok(Array.isArray(call));
+
+      assert.ok(!call[0].value.includes("{{"));
+      assert.ok(!call[2].value.includes("{{"));
     });
 
     it("Should accept a call for a table - utility table", async function () {
@@ -234,15 +291,22 @@ describe("Generator Logic", function () {
       });
     });
 
+    // TODO test splitter types
+    // it("Should return default value if table not found.", async function () {
+    //   await genLogic.getCall(STRINGS.rootTable + "/test/tester").then((res) => {
+    //     console.log(">>>DF>call", res);
+    //     // assert.ok(false);
+    //   });
+    // });
+
     it("should run buildIndex with single table without erroring", function () {
       assert.doesNotThrow(
         () => {
           const r = genLogic.buildIndex(
-            [
-              TEST_TABLES.appendTable,
-            ],
+            [TEST_TABLES.appendTable],
             null,
-            null
+            null,
+            asyncFunction
           );
           index = r.generalIndex;
           issues = r.issues;
@@ -254,14 +318,44 @@ describe("Generator Logic", function () {
 
     // check originals removed
     it("Should not work with removed tables", async function () {
-      await genLogic.getCall(utilityTableCall).catch(e =>{
+      await genLogic.getCall(utilityTableCall).catch((e) => {
         assert.ok(e === STR.callFailGet);
       });
     });
 
-    // check async call
-    it("Should accept an asyn call", async function () {
-      assert.ok(false);
+    it("should run buildIndex with async table without erroring", function () {
+      assert.doesNotThrow(
+        () => {
+          const r = genLogic.buildIndex(
+            [TEST_TABLES.asyncGet, TEST_TABLES.asyncFullGet],
+            null,
+            null,
+            asyncFunction
+          );
+          index = r.generalIndex;
+          issues = r.issues;
+        },
+        Error,
+        "Error thrown"
+      );
+    });
+
+    it("Should accept an async utility call", async function () {
+      await genLogic
+        .getCall(`${TEST_TABLES.asyncGet.collectionID}/testasync/test`)
+        .then((res) => {
+          assert.ok(res === STRINGS.asyncVal);
+        });
+    });
+
+    it("Should accept an async table call", async function () {
+      await genLogic
+        .getCall(`${TEST_TABLES.asyncFullGet.collectionID}/testtable/test`)
+        .then((res) => {
+          // table call
+          assert.ok(res[0].value === STRINGS.asyncTableValA);
+          assert.ok(res[1].value === STRINGS.asyncTableValB);
+        });
     });
   });
 });

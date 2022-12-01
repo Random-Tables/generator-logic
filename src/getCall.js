@@ -15,26 +15,47 @@ const Splitters = {
 
 const callRegex = /\{{(.*?)\}}/g;
 
+async function regexToGetCall(regexString) {
+  const removeCurlyBraces = regexString.substring(2, regexString.length - 2);
+  const [callString, defaultValue] = removeCurlyBraces.includes(":")
+    ? removeCurlyBraces.split(":")
+    : [removeCurlyBraces, ""];
+  try {
+    const getCallData = await getCall(callString);
+    return getCallData;
+  } catch (e) {
+    console.error("regexToGetCall::", e);
+    return defaultValue;
+  }
+}
+
 function recursiveStringCheck(tableString) {
   return new Promise((resolve, reject) => {
     if (typeof tableString === "string") {
-      const externalCallRegex = tableString.match(callRegex);
+      let externalCallRegex = tableString.match(callRegex);
 
       if (externalCallRegex) {
-        const removeCurlyBraces = tableString.substring(
-          2,
-          tableString.length - 2
+        Promise.all(externalCallRegex.map(regexToGetCall)).then(
+          (resultsArray) => {
+            let iter = 0;
+            function replaceCallsWithResults() {
+              const val = iter;
+              iter++;
+              return resultsArray[val];
+            }
+            const tableReturnString = tableString.replace(
+              callRegex,
+              replaceCallsWithResults
+            );
+            resolve(tableReturnString);
+          }
         );
-        const [callString, defaultValue] = removeCurlyBraces.includes(":")
-          ? removeCurlyBraces.split(":")
-          : [removeCurlyBraces, 0];
-        const recursiveGetCall = getCall(callString);
-        resolve(
-          typeof recursiveGetCall === "string" ? recursiveGetCall : defaultValue
-        );
+      } else {
+        resolve(tableString);
       }
+    } else {
+      resolve(tableString);
     }
-    resolve(tableString);
   });
 }
 
@@ -48,42 +69,65 @@ function getRandom(arrayTables) {
   });
 }
 
-function getCall(tableCall) {
+function getCall(tableCall, asyncGetFunction) {
   return new Promise(async (resolve, reject) => {
-    if (typeof tableCall === "string") {
-      const tableStringSplit = tableCall.split("/");
-      if (tableStringSplit.length === 3) {
-        const [collection, tableGroup, table] = tableStringSplit;
+    try {
+      if (typeof tableCall === "string") {
+        const tableStringSplit = tableCall.split("/");
 
-        const collectionData = localIndex.all?.[collection];
-        const tableGet = collectionData?.tableData?.[tableGroup]?.[table];
-        if (tableGet) {
-          if (collectionData.isUtility) {
-            await getRandom(tableGet.table).then((v) => {
-              resolve(v);
-            });
+        if (tableStringSplit.length === 3) {
+          const [collection, tableGroup, table] = tableStringSplit;
+
+          const collectionData = localIndex.all?.[collection];
+
+          if (collectionData && !collectionData.tableData && asyncGetFunction) {
+            const tableDataAsync = await asyncGetFunction(collectionData);
+            collectionData.tableData = tableDataAsync;
+          }
+
+          const tableGet = collectionData?.tableData?.[tableGroup]?.[table];
+          if (tableGet) {
+            if (collectionData.isUtility) {
+              const value = await getRandom(tableGet.table);
+
+              resolve(value);
+            } else {
+              const tableSectionData = tableGet.tableSections || [
+                { name: "err", value: "err" },
+              ];
+              const randomisedTableSections = await Promise.all(
+                tableSectionData.map(async (section) => {
+                  const value = await getRandom(section.table);
+                  return { ...section, table: null, value };
+                })
+              );
+              resolve(randomisedTableSections);
+            }
           } else {
-            resolve(tableGet);
+            // granular err
+            reject(STR.callFailGet);
           }
         } else {
-          // granular err
-          reject(STR.callFailGet);
+          console.error(
+            STR.incorrectCallString +
+              tableCall +
+              " :Len: " +
+              tableStringSplit.length,
+            tableStringSplit
+          );
+          reject(
+            "tableCall is incorrectly structured, unable to divide by / key ::" +
+              tableCall
+          );
         }
       } else {
-        console.error(
-          STR.incorrectCallString +
-            tableCall +
-            " :Len: " +
-            tableStringSplit.length,
-          tableStringSplit
-        );
         reject(
-          "tableCall is incorrectly structured, unable to divide by / key ::" +
-            tableCall
+          "tableCall is not a string::" + typeof tableCall + "::" + tableCall
         );
       }
+    } catch (e) {
+      reject("tableCall failed with error::" + tableCall + "::" + e);
     }
-    reject("tableCall is not a string::" + typeof tableCall + "::" + tableCall);
   });
 }
 

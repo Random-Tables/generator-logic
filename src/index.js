@@ -28,6 +28,7 @@ function addTableToIndex(arr, asyncGet) {
       isUtility,
     } = arr;
     const dataObject = {
+      collectionID,
       tables,
       tableData,
       category,
@@ -128,6 +129,6 @@ module.exports = {
     buildIndex(arr, true, onComplete, onError, asyncGet),
   appendIndex: (arr, onComplete, onError, asyncGet) =>
     buildIndex([arr], false, onComplete, onError, asyncGet),
-  getCall: calls.getCall,
+  getCall: (tableCall) => calls.getCall(tableCall, asyncGetFunction),
   getCallNoAsync: calls.getCallNoAsync,
 };
