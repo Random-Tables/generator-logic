@@ -15,6 +15,8 @@ const STRINGS = {
   asyncVal: "async-val",
   asyncTableValA: "fulltableA",
   asyncTableValB: "fulltableB",
+  splitterTable: "splitter-table",
+  splitterUtilTable: "splitter-util-table",
 };
 
 function asyncFunction(table) {
@@ -109,6 +111,7 @@ const TEST_TABLES = {
           {
             collectionID: STRINGS.rootTable,
             collectionName: "root utility Table",
+            isUtility: true,
             version: 1,
             tags: ["testing"],
             tables: {
@@ -117,7 +120,7 @@ const TEST_TABLES = {
             tableData: {
               test: {
                 tester: {
-                  table: ["test {{not/a/table::default}}"],
+                  table: ["{{not/a/table:default}}"],
                 },
               },
             },
@@ -161,6 +164,59 @@ const TEST_TABLES = {
       },
     },
   },
+  splitterTable: {
+    collectionID: STRINGS.splitterTable,
+    collectionName: "splitter Table",
+    version: 1,
+    isUtility: true,
+    tables: {
+      test: ["number", "dice", "start-vowel", "start-consonant", "uppercase"],
+    },
+    tableData: {
+      test: {
+        number: {
+          table: ["{{Number#100-300}}"],
+        },
+        dice: {
+          table: ["{{D#3d6 + 2d4}}"],
+        },
+        "dice-b": {
+          table: ["{{D#3d6 + 4}}"],
+        },
+        "start-vowel": {
+          table: [`{{${STRINGS.splitterUtilTable}/test/start-vowel#AN:fail}}`],
+        },
+        "start-consonant": {
+          table: [`{{${STRINGS.splitterUtilTable}/test/start-consonant#AN:fail}}`],
+        },
+        uppercase: {
+          table: [`{{${STRINGS.splitterUtilTable}/test/uppercase#UP:fail}}`],
+        },
+      },
+    },
+  },
+  splitterUtilTable: {
+    collectionID: STRINGS.splitterUtilTable,
+    collectionName: "splitter util Table",
+    version: 1,
+    isUtility: true,
+    tables: {
+      test: ["start-vowel", "start-consonant", "uppercase"],
+    },
+    tableData: {
+      test: {
+        "start-vowel": {
+          table: ["object"],
+        },
+        "start-consonant": {
+          table: ["thing"],
+        },
+        uppercase: {
+          table: ["thing"],
+        },
+      },
+    },
+  },
 };
 
 const expectedErrors = {
@@ -172,6 +228,14 @@ const tableCallA = "npc-fantasy/dwarf/male";
 const utilityTableCall = "utility-npc/hobby/outdoor";
 const utilityNestedTableCall = "utility-npc/hobby/all";
 const incorrectTableCall = "npc-fantasy/dwarf";
+
+const SplitterCallPre =  `${STRINGS.splitterTable}/test`;
+const splitterNumber = `${SplitterCallPre}/number`;
+const splitterDice = `${SplitterCallPre}/dice`;
+const splitterDiceB = `${SplitterCallPre}/dice-b`;
+const splitterAnVowel = `${SplitterCallPre}/start-vowel`;
+const splitterAnConsonant = `${SplitterCallPre}/start-consonant`;
+const splitterUppercase = `${SplitterCallPre}/uppercase`;
 
 describe("Generator Logic", function () {
   describe("buildIndex", function buildNoEr() {
@@ -235,6 +299,8 @@ describe("Generator Logic", function () {
             TEST_TABLES.hasRequirements,
             TEST_TABLES.lowVersion,
             TEST_TABLES.asyncGet,
+            TEST_TABLES.splitterTable,
+            TEST_TABLES.splitterUtilTable,
           ]);
           index = r.generalIndex;
           issues = r.issues;
@@ -260,7 +326,6 @@ describe("Generator Logic", function () {
 
     it("Should accept a call for a table - full table", async function () {
       const call = await genLogic.getCall(tableCallA);
-      console.log("T>call", call);
       assert.ok(Array.isArray(call));
 
       assert.ok(!call[0].value.includes("{{"));
@@ -291,13 +356,54 @@ describe("Generator Logic", function () {
       });
     });
 
-    // TODO test splitter types
-    // it("Should return default value if table not found.", async function () {
-    //   await genLogic.getCall(STRINGS.rootTable + "/test/tester").then((res) => {
-    //     console.log(">>>DF>call", res);
-    //     // assert.ok(false);
-    //   });
-    // });
+    it("Should return default value if nested table call not found.", async function () {
+      await genLogic.getCall(STRINGS.rootTable + "/test/tester").then((res) => {
+        console.log(">>>DF>call-"+res+"-");
+        assert.ok(res === "default");
+      });
+    });
+
+    it("Should return correct Number value.", async function () {
+      await genLogic.getCall(splitterNumber).then((res) => {
+        console.log(">>>NUM>call", res);
+        assert.ok(parseInt(res) || res === "0");
+      });
+    });
+
+    it("Should return correct Dice value.", async function () {
+      await genLogic.getCall(splitterDice).then((res) => {
+        console.log(">>>DC>call", res);
+        assert.ok(parseInt(res) || res === "0");
+      });
+    });
+
+    it("Should return correct 2 added Dice values.", async function () {
+      await genLogic.getCall(splitterDiceB).then((res) => {
+        console.log(">>>DCB>call", res);
+        assert.ok(parseInt(res) || res === "0");
+      });
+    });
+
+    it("Should return correct [AN] value, prefixing with 'a'.", async function () {
+      await genLogic.getCall(splitterAnConsonant).then((res) => {
+        console.log(">>>A>call", res);
+        assert.ok(res.substring(0, 2) === "a ");
+      });
+    });
+
+    it("Should return correct [AN] value, prefixing with 'an'.", async function () {
+      await genLogic.getCall(splitterAnVowel).then((res) => {
+        console.log(">>>AN>call", res);
+        assert.ok(res.substring(0, 3) === "an ");
+      });
+    });
+
+    it("Should return correct uppercase value.", async function () {
+      await genLogic.getCall(splitterUppercase).then((res) => {
+        console.log(">>>UP>call", res);
+        assert.ok(res.substring(0, 1) === res.substring(0, 1).toUpperCase());
+      });
+    });
 
     it("should run buildIndex with single table without erroring", function () {
       assert.doesNotThrow(
