@@ -7,10 +7,9 @@ const rootIndex = {
 };
 let generalIndex;
 let issues = [];
-let asyncGetFunction;
 
 function addTableToIndex(arr, asyncGet) {
-  asyncGetFunction = asyncGet;
+  calls.setAsyncGetFunction(asyncGet);
   let categories = Object.keys(generalIndex);
   if (
     typeof arr === "object" &&
@@ -127,5 +126,5 @@ module.exports = {
     buildIndex(arr, true, onComplete, onError, asyncGet),
   appendIndex: (arr, onComplete, onError, asyncGet) =>
     buildIndex([arr], false, onComplete, onError, asyncGet),
-  getCall: (tableCall) => calls.getCall(tableCall, asyncGetFunction),
+  getCall: (tableCall) => calls.getCall(tableCall),
 };

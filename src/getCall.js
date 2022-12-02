@@ -6,6 +6,12 @@ function setlocalIndex(i) {
   localIndex = i;
 }
 
+let asyncGetFunction;
+
+function setAsyncGetFunction(newFunc) {
+  asyncGetFunction = newFunc;
+}
+
 const Splitters = {
   number: "Number#",
   dice: "D#",
@@ -124,7 +130,7 @@ function getRandom(arrayTables) {
   });
 }
 
-function getCall(tableCall, asyncGetFunction) {
+function getCall(tableCall) {
   return new Promise(async (resolve, reject) => {
     try {
       if (typeof tableCall === "string") {
@@ -185,4 +191,4 @@ function getCall(tableCall, asyncGetFunction) {
   });
 }
 
-module.exports = { getCall, setlocalIndex };
+module.exports = { getCall, setlocalIndex, setAsyncGetFunction };
