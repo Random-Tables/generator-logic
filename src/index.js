@@ -109,8 +109,6 @@ function buildIndex(
 
       calls.setlocalIndex(generalIndex);
       if (onComplete) onComplete();
-      console.log(">>>onComplete", Object.keys(generalIndex.all));
-      console.log(">>issues", issues);
     } else {
       console.error("failed to build Index, should pass array");
       if (onError) onError(STR.tableNotArray);
@@ -130,5 +128,4 @@ module.exports = {
   appendIndex: (arr, onComplete, onError, asyncGet) =>
     buildIndex([arr], false, onComplete, onError, asyncGet),
   getCall: (tableCall) => calls.getCall(tableCall, asyncGetFunction),
-  getCallNoAsync: calls.getCallNoAsync,
 };

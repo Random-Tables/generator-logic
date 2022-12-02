@@ -185,6 +185,4 @@ function getCall(tableCall, asyncGetFunction) {
   });
 }
 
-function getCallNoAsync(tableCall) {}
-
-module.exports = { getCall, getCallNoAsync, setlocalIndex };
+module.exports = { getCall, setlocalIndex };
