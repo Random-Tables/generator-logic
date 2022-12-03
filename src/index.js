@@ -14,12 +14,10 @@ function addTableToIndex(arr, asyncGet) {
   if (
     typeof arr === "object" &&
     arr.hasOwnProperty &&
-    arr.hasOwnProperty("collectionID") &&
-    arr.hasOwnProperty("tables")
+    arr.hasOwnProperty("collectionID")
   ) {
     const {
       collectionID,
-      tables,
       tableData,
       category,
       version,
@@ -28,7 +26,6 @@ function addTableToIndex(arr, asyncGet) {
     } = arr;
     const dataObject = {
       collectionID,
-      tables,
       tableData,
       category,
       version,

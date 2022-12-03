@@ -61,9 +61,6 @@ const TEST_TABLES = {
     collectionName: "Low V Table",
     version: 1,
     tags: ["testing"],
-    tables: {
-      test: ["tester"],
-    },
     tableData: {
       test: {
         tester: {},
@@ -82,9 +79,6 @@ const TEST_TABLES = {
       STRINGS.recTable + "@1",
     ],
     tags: ["testing"],
-    tables: {
-      test: ["tester"],
-    },
     tableData: {
       test: {
         tester: {},
@@ -99,9 +93,6 @@ const TEST_TABLES = {
         version: 2,
         required: [STRINGS.rootTable],
         tags: ["testing"],
-        tables: {
-          test: ["tester"],
-        },
         tableData: {
           test: {
             tester: {},
@@ -114,9 +105,6 @@ const TEST_TABLES = {
             isUtility: true,
             version: 1,
             tags: ["testing"],
-            tables: {
-              test: ["tester"],
-            },
             tableData: {
               test: {
                 tester: {
@@ -135,9 +123,6 @@ const TEST_TABLES = {
     isUtility: true,
     version: 1,
     tags: ["testing"],
-    tables: {
-      testasync: ["test"],
-    },
   },
   asyncFullGet: {
     collectionID: STRINGS.asyncFullTable,
@@ -145,17 +130,11 @@ const TEST_TABLES = {
     isUtility: false,
     version: 1,
     tags: ["testing"],
-    tables: {
-      testtable: ["test"],
-    },
   },
   appendTable: {
     collectionID: STRINGS.appendTable,
     collectionName: "Append Table",
     version: 1,
-    tables: {
-      test: ["tester"],
-    },
     tableData: {
       test: {
         tester: {
@@ -169,9 +148,6 @@ const TEST_TABLES = {
     collectionName: "splitter Table",
     version: 1,
     isUtility: true,
-    tables: {
-      test: ["number", "dice", "start-vowel", "start-consonant", "uppercase"],
-    },
     tableData: {
       test: {
         number: {
@@ -200,9 +176,6 @@ const TEST_TABLES = {
     collectionName: "splitter util Table",
     version: 1,
     isUtility: true,
-    tables: {
-      test: ["start-vowel", "start-consonant", "uppercase"],
-    },
     tableData: {
       test: {
         "start-vowel": {
