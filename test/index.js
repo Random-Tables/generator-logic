@@ -402,6 +402,7 @@ describe("Generator Logic", function () {
       await genLogic.getCall(splitterUppercase).then((res) => {
         console.log(">>>UP>call", res);
         assert.ok(res.substring(0, 1) === res.substring(0, 1).toUpperCase());
+        assert.ok(res.substring(1, 2) === res.substring(1, 2).toLowerCase());
       });
     });
 

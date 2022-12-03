@@ -75,7 +75,7 @@ async function regexToGetCall(regexString) {
                 : "a"
             } ${res}`;
           if (callString.includes(Splitters.uppercase))
-            return res.toUpperCase();
+            return res.charAt(0).toUpperCase() + res.slice(1);
           return res;
         })
         .catch((e) => {
