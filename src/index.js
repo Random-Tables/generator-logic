@@ -16,14 +16,8 @@ function addTableToIndex(arr, asyncGet) {
     arr.hasOwnProperty &&
     arr.hasOwnProperty("collectionID")
   ) {
-    const {
-      collectionID,
-      tableData,
-      category,
-      version,
-      required,
-      isUtility,
-    } = arr;
+    const { collectionID, tableData, category, version, required, isUtility } =
+      arr;
     const dataObject = {
       collectionID,
       tableData,
@@ -124,4 +118,6 @@ module.exports = {
   appendIndex: (arr, onComplete, onError, asyncGet) =>
     buildIndex([arr], false, onComplete, onError, asyncGet),
   getCall: (tableCall) => calls.getCall(tableCall),
+  // allows for easier debugging
+  inspectIndex: () => generalIndex,
 };

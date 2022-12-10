@@ -1,6 +1,6 @@
 {
   "name": "@random-tables/generator-logic",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "logic manager for table generator; build index, call table",
   "main": "src/index.js",
   "scripts": {
