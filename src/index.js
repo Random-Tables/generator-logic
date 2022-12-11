@@ -115,8 +115,8 @@ function buildIndex(
 module.exports = {
   buildIndex: (arr, onComplete, onError, asyncGet) =>
     buildIndex(arr, true, onComplete, onError, asyncGet),
-  appendIndex: (arr, onComplete, onError, asyncGet) =>
-    buildIndex([arr], false, onComplete, onError, asyncGet),
+  appendIndex: (table, onComplete, onError) =>
+    buildIndex([table], false, onComplete, onError),
   getCall: (tableCall) => calls.getCall(tableCall),
   // allows for easier debugging
   inspectIndex: () => generalIndex,
